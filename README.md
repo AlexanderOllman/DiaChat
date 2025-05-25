@@ -75,7 +75,7 @@ If you prefer to run the application directly on your host machine without Docke
 
 2.  **Clone the Repository:**
     ```bash
-    git clone <repository_url>
+    git clone https://github.com/AlexanderOllman/DiaChat
     cd diachat
     ```
 
