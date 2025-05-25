@@ -1,6 +1,6 @@
 # DiaChat
 
-DiaChat is a lightweight, real-time, in-browser voice AI chat framework designed to be run locally. It uses a combination of cutting-edge speech-to-text (STT) from [Whisper](https://github.com/ggerganov/whisper.cpp), a large language model (LLM) via [Ollama](https://github.com/ollama/ollama), and text-to-speech (TTS) with the [Dia](https://github.com/nari-labs/dia) model to provide a conversational AI experience. 
+DiaChat is a lightweight, real-time voice AI chat framework designed to be run locally. It uses a combination of cutting-edge speech-to-text (STT) from [Whisper](https://github.com/ggerganov/whisper.cpp), a large language model (LLM) via [Ollama](https://github.com/ollama/ollama), and text-to-speech (TTS) with the [Dia](https://github.com/nari-labs/dia) model to provide a conversational AI experience. 
 
 ## Features
 
