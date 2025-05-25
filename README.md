@@ -118,7 +118,7 @@ If you prefer to run the application directly on your host machine without Docke
 7.  **SSL Certificate Generation (for Microphone Access on Non-Localhost URLs):**
     For microphone access in the browser when accessing the server using an IP address (e.g., `https://192.168.x.x:8443`) rather than `http://localhost:8000` or `https://localhost:8443`, a self-signed SSL certificate is usually required. Browsers enforce HTTPS for microphone access on non-localhost URLs for security reasons.
 
-    During the initial **Pre-flight Checks** (see step 3 below), the application (`main.py`) will automatically attempt to generate `cert.pem` and `key.pem` files if they are not found in the project's root directory and the `openssl` command is available on your system.
+    During the initial **Pre-flight Checks** when you run the application (`main.py`), you will automatically be prompted to generate `cert.pem` and `key.pem` files if they are not found in the project's root directory and the `openssl` command is available on your system.
     
     If certificates are missing and `openssl` is found, you will be prompted to enter a **Common Name (CN)** for the certificate during the pre-flight check process. This is crucial:
     *   If you will only access DiaChat via `localhost`, you can enter `localhost` or press Enter to use it as the default.
