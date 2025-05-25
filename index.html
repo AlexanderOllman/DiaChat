@@ -1,0 +1,559 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  body { 
+    font-family: sans-serif; 
+    padding: 2rem; 
+    max-width: 1000px; 
+    margin: 0 auto;
+    background: #f8f9fa;
+  }
+  
+  .container {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 2rem;
+  }
+  
+  .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  button { 
+    padding: 0.75rem 1.5rem; 
+    font-size: 1rem; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+  }
+  
+  button:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+  }
+  
+  #btn { 
+    background: #28a745; 
+    color: white;
+    box-shadow: 0 2px 4px rgba(40,167,69,0.2);
+  }
+  
+  #btn.stop { 
+    background: #dc3545;
+    box-shadow: 0 2px 4px rgba(220,53,69,0.2);
+  }
+  
+  #btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  
+  .status {
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    min-height: 24px;
+  }
+  
+  .status.idle { background: #e9ecef; color: #6c757d; }
+  .status.listening { background: #d4edda; color: #155724; }
+  .status.processing { background: #fff3cd; color: #856404; }
+  .status.speaking { background: #cce5ff; color: #004085; }
+  
+  .audio-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .audio-section > div {
+    width: 100%;
+  }
+  
+  .waveform-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+  }
+  
+  .waveform-container h3 {
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 1rem;
+  }
+  
+  #waveform {
+    width: 100%;
+    height: 120px;
+    background: #212529;
+    border-radius: 4px;
+    display: block;
+  }
+  
+  .whisper-status {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+  }
+  
+  .whisper-status h3 {
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 1rem;
+  }
+  
+  #whisper-output {
+    background: #212529;
+    color: #00ff41;
+    padding: 1rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    min-height: 80px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  
+  .chat-log {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+  }
+  
+  .chat-log h3 {
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 1rem;
+  }
+  
+  #log { 
+    background: white;
+    padding: 1rem; 
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  
+  #error { 
+    color: #721c24;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    margin-top: 1rem; 
+    padding: 1rem; 
+    border-radius: 8px;
+  }
+  
+  .pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  
+  .recording-indicator {
+    width: 12px;
+    height: 12px;
+    background: #dc3545;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+  }
+  
+  .tts-status-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+  }
+  
+  .tts-status-container h3 {
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 1rem;
+  }
+  
+  #tts-output {
+    background: #212529;
+    color: #ffc107;
+    padding: 1rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    min-height: 80px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  
+  @media (max-width: 992px) {
+    .audio-section {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .audio-section {
+      grid-template-columns: 1fr;
+    }
+    
+    .container {
+      padding: 1rem;
+    }
+  }
+</style>
+
+<div class="container">
+  <h1>🎙️ DiaChat</h1>
+  
+  <div class="controls">
+    <button id="btn" disabled>Checking microphone...</button>
+    <div id="playback-speed-control">
+        <label for="playbackRateSlider">Playback Speed:</label>
+        <input type="range" id="playbackRateSlider" min="0.5" max="2.5" value="1.0" step="0.1">
+        <span id="playbackRateValue">1.0x</span>
+    </div>
+  </div>
+  
+  <div id="status" class="status idle">Ready to start</div>
+  
+  <div class="audio-section">
+    <div class="waveform-container">
+      <h3>🎵 Audio Waveform</h3>
+      <canvas id="waveform"></canvas>
+    </div>
+    
+    <div class="whisper-status">
+      <h3>🎯 Whisper Status</h3>
+      <div id="whisper-output">Waiting for audio...</div>
+    </div>
+    
+    <div class="tts-status-container">
+      <h3>🤖 Dia TTS Status</h3>
+      <div id="tts-output">Waiting for text...</div>
+    </div>
+  </div>
+  
+  <div class="chat-log">
+    <h3>💬 Conversation</h3>
+<div id="log"></div>
+  </div>
+  
+  <div id="error" style="display:none;"></div>
+</div>
+
+<script>
+let ws, ctx, processor, recording = false, analyser, dataArray;
+const btn = document.getElementById('btn');
+const log = document.getElementById('log');
+const errorDiv = document.getElementById('error');
+const statusDiv = document.getElementById('status');
+const whisperOutput = document.getElementById('whisper-output');
+const ttsOutput = document.getElementById('tts-output');
+const canvas = document.getElementById('waveform');
+const canvasCtx = canvas.getContext('2d');
+const playbackRateSlider = document.getElementById('playbackRateSlider');
+const playbackRateValueSpan = document.getElementById('playbackRateValue');
+let currentPlaybackRate = 1.0;
+
+// Set up canvas
+canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+canvasCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+if (playbackRateSlider) {
+    currentPlaybackRate = parseFloat(playbackRateSlider.value);
+    playbackRateValueSpan.textContent = currentPlaybackRate.toFixed(1) + 'x';
+
+    playbackRateSlider.addEventListener('input', (event) => {
+        currentPlaybackRate = parseFloat(event.target.value);
+        playbackRateValueSpan.textContent = currentPlaybackRate.toFixed(1) + 'x';
+    });
+}
+
+// Waveform visualization
+function drawWaveform() {
+  if (!analyser || !recording) return;
+  
+  analyser.getByteTimeDomainData(dataArray);
+  
+  canvasCtx.fillStyle = '#212529';
+  canvasCtx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+  
+  canvasCtx.lineWidth = 2;
+  canvasCtx.strokeStyle = '#00ff41';
+  canvasCtx.beginPath();
+  
+  const sliceWidth = canvas.offsetWidth / dataArray.length;
+  let x = 0;
+  
+  for (let i = 0; i < dataArray.length; i++) {
+    const v = dataArray[i] / 128.0;
+    const y = v * canvas.offsetHeight / 2;
+    
+    if (i === 0) {
+      canvasCtx.moveTo(x, y);
+    } else {
+      canvasCtx.lineTo(x, y);
+    }
+    
+    x += sliceWidth;
+  }
+  
+  canvasCtx.stroke();
+  requestAnimationFrame(drawWaveform);
+}
+
+function updateStatus(status, message) {
+  statusDiv.className = `status ${status}`;
+  statusDiv.innerHTML = message;
+}
+
+function updateWhisperStatus(message, isProcessing = false) {
+  whisperOutput.textContent = message;
+  if (isProcessing) {
+    whisperOutput.parentElement.classList.add('pulse');
+  } else {
+    whisperOutput.parentElement.classList.remove('pulse');
+  }
+}
+
+function updateTTSStatus(message, isProcessing = false) {
+  ttsOutput.textContent = message;
+  if (isProcessing) {
+    ttsOutput.parentElement.classList.add('pulse');
+  } else {
+    ttsOutput.parentElement.classList.remove('pulse');
+  }
+}
+
+// Check if getUserMedia is supported
+function checkMediaSupport() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showError('Your browser does not support microphone access. Please use a modern browser like Chrome, Firefox, or Safari.');
+    return false;
+  }
+  
+  // Check if we're in a secure context (HTTPS or localhost)
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    showError('Microphone access requires HTTPS. Please access this page over HTTPS or use localhost.');
+    return false;
+  }
+  
+  return true;
+}
+
+function showError(message) {
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+  btn.disabled = true;
+}
+
+function hideError() {
+  errorDiv.style.display = 'none';
+}
+
+// Initialize the page
+if (checkMediaSupport()) {
+  btn.textContent = '🎙️ Start Recording';
+  btn.disabled = false;
+  updateStatus('idle', 'Ready to start recording');
+  updateWhisperStatus('Waiting for audio...');
+  updateTTSStatus('Waiting for text...');
+} else {
+  btn.textContent = 'Not supported';
+  updateStatus('idle', 'Microphone not supported');
+}
+
+btn.onclick = async () => {
+  if (!checkMediaSupport()) return;
+  
+  if (recording) {
+    processor.disconnect(); 
+    ctx.close(); 
+    ws.close();
+    btn.textContent = '🎙️ Start Recording'; 
+    btn.className = '';
+    recording = false;
+    updateStatus('idle', 'Recording stopped');
+    updateWhisperStatus('Waiting for audio...');
+    updateTTSStatus('Waiting for text...');
+    
+    // Clear waveform
+    canvasCtx.fillStyle = '#212529';
+    canvasCtx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    return;
+  }
+  
+  try {
+    hideError();
+    btn.disabled = true;
+    btn.textContent = 'Connecting...';
+    updateStatus('processing', 'Connecting to server...');
+    
+  ws = new WebSocket(`ws${location.protocol==='https:'?'s':''}://${location.host}/ws/audio`);
+  ws.binaryType = 'arraybuffer';
+    ws.onmessage = async ({data}) => {
+    if (typeof data === 'string') {
+        const message = JSON.parse(data);
+        
+        if (message.type === 'text') {
+          log.textContent += `You: ${message.payload}\n`;
+          log.scrollTop = log.scrollHeight;
+        } else if (message.type === 'whisper_status') {
+          updateWhisperStatus(message.payload, message.processing || false);
+        } else if (message.type === 'tts_status') {
+          updateTTSStatus(message.payload, message.processing || false);
+        } else if (message.type === 'ai_response') {
+          log.textContent += `AI: ${message.payload}\n`;
+          log.scrollTop = log.scrollHeight;
+          updateStatus('speaking', '🔊 AI is speaking...');
+        }
+    } else {
+        // Audio data from AI
+        console.log('[WS] Received audio data (ArrayBuffer), byteLength:', data.byteLength);
+        if (!ctx || ctx.state === 'closed') {
+          console.error('[AudioPlayback] AudioContext is not active or closed. State:', ctx ? ctx.state : 'null');
+          showError('Audio playback error: Audio context closed. Please restart recording.');
+          return;
+        }
+        console.log('[AudioPlayback] AudioContext state:', ctx.state, 'Sample rate:', ctx.sampleRate);
+
+        try {
+      const buf = new Int16Array(data);
+          console.log('[AudioPlayback] Int16Array length:', buf.length);
+          if (buf.length === 0) {
+            console.warn('[AudioPlayback] Received empty audio buffer.');
+            return;
+          }
+          
+          const f32 = Float32Array.from(buf, x => x / 32768.0);
+          console.log('[AudioPlayback] Float32Array length:', f32.length, 'Sample values (first 5):', f32.slice(0,5));
+          
+          const audioBuffer = ctx.createBuffer(1, f32.length, 48000);
+          console.log('[AudioPlayback] Created AudioBuffer - Duration:', audioBuffer.duration, 's, SampleRate:', audioBuffer.sampleRate, 'Channels:', audioBuffer.numberOfChannels);
+          
+          audioBuffer.copyToChannel(f32, 0);
+          
+          const sourceNode = ctx.createBufferSource(); 
+          sourceNode.buffer = audioBuffer;
+          sourceNode.connect(ctx.destination);
+          
+          sourceNode.onended = () => {
+            console.log('[AudioPlayback] Audio source finished playing.');
+            if (recording) updateStatus('listening', '<span class="recording-indicator pulse"></span>Listening...');
+            else updateStatus('idle', 'Playback finished');
+          };
+          
+          sourceNode.playbackRate.value = currentPlaybackRate;
+          sourceNode.start();
+          console.log('[AudioPlayback] Audio source started with playback rate:', currentPlaybackRate);
+          updateStatus('speaking', '🔊 AI is speaking...');
+          
+        } catch (e) {
+          console.error('[AudioPlayback] Error processing or playing audio:', e);
+          showError(`Audio playback error: ${e.message}`);
+          updateStatus('idle', 'Error playing audio');
+        }
+      }
+    };
+    
+    ws.onerror = (error) => {
+      showError('WebSocket connection failed. Make sure the server is running.');
+      btn.disabled = false;
+      btn.textContent = '🎙️ Start Recording';
+      updateStatus('idle', 'Connection failed');
+    };
+    
+    await new Promise((resolve, reject) => {
+      ws.onopen = resolve;
+      ws.onerror = reject;
+      setTimeout(() => reject(new Error('Connection timeout')), 5000);
+    });
+    
+    btn.textContent = 'Accessing microphone...';
+    updateStatus('processing', 'Accessing microphone...');
+    
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        sampleRate: 48000
+      }
+    });
+    
+    ctx = new AudioContext({sampleRate: 48000});
+  const source = ctx.createMediaStreamSource(stream);
+    
+    // Set up analyser for waveform
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    const bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+    
+  processor = ctx.createScriptProcessor(4096, 1, 1);
+  processor.onaudioprocess = e => {
+      if (ws.readyState === WebSocket.OPEN) {
+    ws.send(Int16Array.from(e.inputBuffer.getChannelData(0), x => x*32767).buffer);
+      }
+    };
+    
+    source.connect(analyser);
+    source.connect(processor); 
+    processor.connect(ctx.destination);
+    
+    btn.textContent = '🛑 Stop Recording'; 
+    btn.className = 'stop';
+    btn.disabled = false;
+    recording = true;
+    
+    updateStatus('listening', '<span class="recording-indicator pulse"></span>Listening...');
+    updateWhisperStatus('Listening for speech...');
+    log.textContent = 'Recording started. Speak into your microphone.\n';
+    
+    // Start waveform animation
+    drawWaveform();
+    
+  } catch (error) {
+    console.error('Error:', error);
+    if (error.name === 'NotAllowedError') {
+      showError('Microphone access denied. Please allow microphone access and try again.');
+    } else if (error.name === 'NotFoundError') {
+      showError('No microphone found. Please connect a microphone and try again.');
+    } else {
+      showError('Error: ' + error.message);
+    }
+    btn.disabled = false;
+    btn.textContent = '🎙️ Start Recording';
+    btn.className = '';
+    updateStatus('idle', 'Ready to start recording');
+  }
+};
+</script>

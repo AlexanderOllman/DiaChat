@@ -1,0 +1,13 @@
+numpy
+resampy
+webrtcvad
+httpx
+ollama
+pywhispercpp
+fastapi
+uvicorn[standard]
+torch
+torchaudio
+huggingface_hub
+# Dia model from nari-labs - install from git
+git+https://github.com/nari-labs/dia.git
